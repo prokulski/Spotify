@@ -67,7 +67,7 @@ model_rf <- randomForest(liked ~ .,
 
 model_rf
 
-#  OOB estimate of  error rate: 9.35%
+#  OOB estimate of  error rate: 18%
 
 plot(model_rf)
 varImpPlot(model_rf)
@@ -110,6 +110,8 @@ tracks_predicted_to_like %>%
    select(-id, -like) %>%
    select(artist, track, album)
 
+
+# wykonawcy ktorych trochę się podoba, a trochę nie:
 bi_artist <- tracks_predicted_to_like %>%
    count(like, artist, sort = TRUE) %>%
    ungroup() %>%
@@ -118,12 +120,13 @@ bi_artist <- tracks_predicted_to_like %>%
    filter(!is.na(s)) %>%
    .$artist
 
-# wykonawcy ktorych trochę się podoba, a trochę nie:
 tracks_predicted_to_like %>%
    filter(artist %in% bi_artist) %>%
    arrange(artist, like)
 
 
+
+# łaczymy dane znane (listy lubie i nie lubie oraz dane testowe)
 tracks_all_long <- bind_rows(
    tracks_all %>%
       select(-track, -album, -artist) %>%
@@ -138,7 +141,7 @@ tracks_all_long <- bind_rows(
                               .$like == FALSE ~ "pred dislike"))
 )
 
-
+# rozklad wartosci cech w zaleznosci od lubie/nie lubie i predykcji
 tracks_all_long %>%
    mutate(like = factor(like, levels = c("liked","pred like", "disliked", "pred dislike"))) %>%
    ggplot() +
@@ -147,7 +150,7 @@ tracks_all_long %>%
    theme(legend.position = "bottom")
 
 
-
+# srednie wartosci cech dla lubie, nie lubie i predykcji
 tracks_all_long %>%
    mutate(like = factor(like, levels = c("liked","pred like", "disliked", "pred dislike"))) %>%
    group_by(feature, like) %>%
